@@ -1,0 +1,147 @@
+# Schema: https://github.com/appbox-co/example-app
+
+app:
+  display_name: "BookBridge"
+  publisher: "cporcellijr"
+  description: |
+    BookBridge syncs your reading and listening progress across Audiobookshelf, KOReader, Storyteller, Grimmory, BookOrbit, Kavita and Calibre-Web Automated, so you can switch between an audiobook and its ebook and pick up where you left off. It matches audiobooks to ebooks, includes a KOReader sync server, and has a web dashboard for managing matches. Each reader gets their own login.
+
+    Your Appbox files are available read-only at `/APPBOX_DATA`, so BookBridge can read ebooks you already store.
+  short_description: "Sync reading and listening progress between Audiobookshelf, KOReader, and your ebook apps"
+  icon: icon.png
+  categories:
+    - "Media"
+    - "Sync"
+  devsite: "https://cporcellijr.github.io/bookbridge/"
+  source_repo: "https://github.com/cporcellijr/bookbridge"
+
+image:
+  name: "bookbridge"
+  version: "7.9.0"
+  tag: "7.9.0"
+
+container:
+  cmd: null
+  user: null
+  group_add: null
+  # Audio-to-text alignment (and Whisper, if used) runs on CPU and eats RAM.
+  memory: 2
+  memory_swap: 0
+  memory_reservation: 0
+  cpus: 0
+  init: false
+  cap_add: null
+  cap_drop: null
+  shm_size: null
+  pids_limit: null
+
+networking:
+  subdomain: "bookbridge"
+  is_web_app: true
+  requires_domain: true
+  ssl: true
+  multiple_domains: false
+  tcp_passthrough: false
+
+behavior:
+  app_slots: 1
+  expect_callback: true
+  callback_requires_auth: false
+  restart_text: null
+  can_update: true
+  update_text: "BookBridge migrates its database on first start after an update. Back up your data folder first if you might need to roll back."
+  allow_downgrade: false
+  ssl_restart: false
+
+install:
+  pre_description: "Choose the username and password for your BookBridge admin account, and the folder that holds your ebooks. The folder can be changed later in Settings."
+  post_description: "BookBridge is ready. Log in, then connect your services under Settings and Account > My Integrations. In KOReader, use the Login URL as the custom sync server."
+  custom_description: null
+
+# The web UI and KOReader sync share one port, proxied through VIRTUAL_PORT.
+ports:
+  tcp:
+    range: null
+    dynamic: 0
+  udp:
+    range: null
+    dynamic: 0
+  combined:
+    range: null
+    dynamic: 0
+
+volumes:
+  # database, encryption key, caches, transcripts, models, logs
+  - source: "data"
+    destination: "/data"
+    permissions: "rw"
+    uid: 1000
+
+# The user's home folder, so BookBridge can see ebooks already on the box.
+# Read-only since it only reads from the ebook folder.
+shared_data:
+  - source: "/cylostore/%CYLO.DISK_NAME%/%CYLO.ID%/home/"
+    destination: "/APPBOX_DATA"
+    permissions: "ro"
+    uid: 1000
+
+env:
+  - key: VIRTUAL_PORT
+    value: "5757"
+    template_type: none
+  # SSL is terminated by the proxy, so mark the session cookie secure.
+  - key: SESSION_COOKIE_SECURE
+    value: "true"
+    template_type: none
+
+custom_fields:
+  USERNAME:
+    label: "Admin Username"
+    type: dynamicText
+    width: 6
+    default_value: "admin"
+    template_type: none
+    validate:
+      - required
+      - alphanumeric
+      - { minLength: 3 }
+      - { maxLength: 64 }
+    params: {}
+
+  PASSWORD:
+    label: "Admin Password"
+    type: complexPassword
+    width: 6
+    default_value: null
+    template_type: password
+    validate:
+      - required
+      - complexPassword
+      - { minLength: 8 }
+    params: {}
+
+  # Initial value for BookBridge's "Books Directory" setting.
+  BOOKS_DIR:
+    label: "Ebook Folder"
+    type: dynamicText
+    width: 12
+    default_value: "/APPBOX_DATA"
+    template_type: none
+    validate:
+      - required
+    params: {}
+
+  LOGIN_URL:
+    label: "Login URL"
+    type: externalURL
+    width: 12
+    default_value: "https://%DOMAIN.DOMAIN%/"
+    template_type: instance
+    validate: []
+    params: {}
+
+advanced:
+  devices: []
+  ulimits: []
+  sysctls: []
+  chains: []
