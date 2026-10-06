@@ -1,6 +1,6 @@
 # BookBridge for Appbox
 
-Appbox packaging for [BookBridge](https://github.com/cporcellijr/bookbridge), which syncs reading and listening progress across Audiobookshelf, KOReader, Storyteller, Grimmory, BookOrbit, Kavita and others. Follows the [Appbox example app](https://github.com/appbox-co/example-app) guide.
+Packaged [BookBridge](https://github.com/cporcellijr/bookbridge), which syncs reading and listening progress across Audiobookshelf, KOReader, Storyteller, Grimmory, BookOrbit, Kavita and others. Follows the [Appbox example app](https://github.com/appbox-co/example-app) guide.
 
 This is an unofficial community package. It runs the official BookBridge image unmodified; BookBridge is MIT licensed.
 
